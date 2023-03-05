@@ -3,7 +3,7 @@ package com.logankulinski.model;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 /**
- * A repository in GitHub.
+ * A repository on GitHub in the Spring Projects First-timer Bot.
  *
  * @author Logan Kulinski, rashes_lineage02@icloud.com
  * @param id the ID of this {@link Repository}

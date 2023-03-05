@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonAlias;
 
 /**
- * An issue in GitHub.
+ * An issue on GitHub in the Spring Projects First-timer Bot.
  *
  * @author Logan Kulinski, rashes_lineage02@icloud.com
  * @param id the ID of this {@link Issue}

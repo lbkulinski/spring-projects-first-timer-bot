@@ -25,20 +25,46 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.scheduling.annotation.Scheduled;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * A service for operating on GitHub issues in the Spring Projects First-timer Bot.
+ *
+ * @author Logan Kulinski, rashes_lineage02@icloud.com
+ */
 @Service
 public final class IssueService {
+    /**
+     * The {@link DSLContext} of this {@link IssueService}.
+     */
     private final DSLContext context;
 
+    /**
+     * The {@link GitHubClient} of this {@link IssueService}.
+     */
     private final GitHubClient client;
 
+    /**
+     * The {@link Utilities} of this {@link IssueService}.
+     */
     private final Utilities utilities;
 
+    /**
+     * The {@link Logger} of the {@link IssueService} class.
+     */
     private static final Logger LOGGER;
 
     static {
         LOGGER = LoggerFactory.getLogger(IssueService.class);
     }
 
+    /**
+     * Constructs an instance of the {@link IssueService} class.
+     *
+     * @param context the {@link DSLContext} to be used in the operation
+     * @param client the {@link GitHubClient} to be used in the operation
+     * @param utilities the {@link Utilities} to be used in the operation
+     * @throws NullPointerException if the specified {@link DSLContext}, {@link GitHubClient}, or {@link Utilities} is
+     * {@code null}
+     */
     @Autowired
     public IssueService(DSLContext context, GitHubClient client, Utilities utilities) {
         Objects.requireNonNull(context);
@@ -54,9 +80,20 @@ public final class IssueService {
         this.utilities = utilities;
     }
 
+    /**
+     * A grouping of a repository name and label name.
+     *
+     * @param repositoryName the repository name of this {@link RepositoryLabel}
+     * @param labelName the label name of this {@link RepositoryLabel}
+     */
     private record RepositoryLabel(String repositoryName, String labelName) {
     }
 
+    /**
+     * Returns a {@link Set} of {@link RepositoryLabel}s to be operated on.
+     *
+     * @return a {@link Set} of {@link RepositoryLabel}s to be operated on
+     */
     private Set<RepositoryLabel> getRepositoryLabels() {
         RecordMapper<Record2<String, String>, RepositoryLabel> mapper = Records.mapping(RepositoryLabel::new);
 
@@ -79,6 +116,13 @@ public final class IssueService {
         return Collections.unmodifiableSet(set);
     }
 
+    /**
+     * Returns {@link Issue}s that are associated with the specified {@link RepositoryLabel}.
+     *
+     * @param repositoryLabel the {@link RepositoryLabel} to be used in the operation
+     * @return {@link Issue}s that are associated with the specified {@link RepositoryLabel}
+     * @throws NullPointerException if the specified {@link RepositoryLabel} is {@code null}
+     */
     private Set<Issue> getRepositoryLabelIssues(RepositoryLabel repositoryLabel) {
         Objects.requireNonNull(repositoryLabel);
 
@@ -120,6 +164,11 @@ public final class IssueService {
         return issues;
     }
 
+    /**
+     * Returns a {@link Set} of {@link Issue}s to be operated on.
+     *
+     * @return a {@link Set} of {@link Issue}s to be operated on
+     */
     private Set<Issue> getIssues() {
         Set<RepositoryLabel> repositoryLabels = this.getRepositoryLabels();
 
@@ -142,7 +191,15 @@ public final class IssueService {
         return allIssues;
     }
 
+    /**
+     * Saves the specified {@link Issue} to the database.
+     *
+     * @param issue the {@link Issue} to be used in the operation
+     * @throws NullPointerException if the specified {@link Issue} is {@code null}
+     */
     private void saveIssue(Issue issue) {
+        Objects.requireNonNull(issue);
+
         int id = issue.id();
 
         String title = issue.title();
@@ -165,6 +222,9 @@ public final class IssueService {
         }
     }
 
+    /**
+     * Updates the open Spring {@link Issue}s every hour.
+     */
     @Scheduled(fixedRate = 1L, timeUnit = TimeUnit.HOURS)
     public void updateIssues() {
         Set<Issue> issues = this.getIssues();

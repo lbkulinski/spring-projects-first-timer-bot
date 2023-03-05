@@ -6,8 +6,19 @@ import java.util.Objects;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 
+/**
+ * A set of utilities used in the Spring Projects First-timer Bot.
+ *
+ * @author Logan Kulinski, rashes_lineage02@icloud.com
+ */
 @Component
 public final class Utilities {
+    /**
+     * Returns the next request page using the specified {@link HttpHeaders}.
+     *
+     * @param httpHeaders the {@link HttpHeaders} to be used in the operation
+     * @return the next request page using the specified {@link HttpHeaders}
+     */
     public Integer getNextPage(HttpHeaders httpHeaders) {
         Objects.requireNonNull(httpHeaders);
 

@@ -20,20 +20,46 @@ import org.jooq.exception.DataAccessException;
 import org.springframework.scheduling.annotation.Scheduled;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * A service for operating on GitHub repositories in the Spring Projects First-timer Bot.
+ *
+ * @author Logan Kulinski, rashes_lineage02@icloud.com
+ */
 @Service
 public final class RepositoryService {
+    /**
+     * The {@link GitHubClient} of this {@link RepositoryService}.
+     */
     private final GitHubClient client;
 
+    /**
+     * The {@link Utilities} of this {@link RepositoryService}.
+     */
     private final Utilities utilities;
 
+    /**
+     * The {@link DSLContext} of this {@link RepositoryService}.
+     */
     private final DSLContext context;
 
+    /**
+     * The {@link Logger} of the {@link RepositoryService} class.
+     */
     private static final Logger LOGGER;
 
     static {
         LOGGER = LoggerFactory.getLogger(RepositoryService.class);
     }
 
+    /**
+     * Constructs an instance of the {@link RepositoryService} class.
+     *
+     * @param client the {@link GitHubClient} to be used in the operation
+     * @param utilities the {@link Utilities} to be used in the operation
+     * @param context the {@link DSLContext} to be used in the operation
+     * @throws NullPointerException if the specified {@link GitHubClient}, {@link Utilities}, or {@link DSLContext} is
+     * {@code null}
+     */
     @Autowired
     public RepositoryService(GitHubClient client, Utilities utilities, DSLContext context) {
         Objects.requireNonNull(client);
@@ -49,6 +75,11 @@ public final class RepositoryService {
         this.context = context;
     }
 
+    /**
+     * Returns a {@link Set} of {@link Repository} objects to be operated on.
+     *
+     * @return a {@link Set} of {@link Repository} objects to be operated on
+     */
     private Set<Repository> getRepositories() {
         int limit = 100;
 
@@ -81,6 +112,12 @@ public final class RepositoryService {
         return repositories;
     }
 
+    /**
+     * Saves the specified {@link Repository} to the database.
+     *
+     * @param repository the {@link Repository} to be used in the operation
+     * @throws NullPointerException if the specified {@link Repository} is {@code null}
+     */
     private void saveRepository(Repository repository) {
         Objects.requireNonNull(repository);
 
@@ -102,6 +139,9 @@ public final class RepositoryService {
         }
     }
 
+    /**
+     * Updates the Spring {@link Repository} objects every hour.
+     */
     @Scheduled(fixedRate = 1L, timeUnit = TimeUnit.DAYS)
     public void updateRepositories() {
         Set<Repository> repositories = this.getRepositories();

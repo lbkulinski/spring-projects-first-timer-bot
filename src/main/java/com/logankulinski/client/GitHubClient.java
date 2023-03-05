@@ -10,7 +10,7 @@ import com.logankulinski.model.Issue;
 import org.springframework.web.bind.annotation.PathVariable;
 
 /**
- * A REST client used to connect to the GitHub API.
+ * A REST client used to connect to the GitHub API in the Spring Projects First-timer Bot.
  *
  * @author Logan Kulinski, rashes_lineage02@icloud.com
  */
