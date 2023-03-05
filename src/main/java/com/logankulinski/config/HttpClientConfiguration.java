@@ -11,8 +11,21 @@ import org.springframework.web.reactive.function.client.support.WebClientAdapter
 import java.time.Duration;
 import org.springframework.web.service.invoker.HttpServiceProxyFactory;
 
+/**
+ * A configuration for HTTP clients in the Spring Projects First-timer Bot.
+ *
+ * @author Logan Kulinski, rashes_lineage02@icloud.com
+ */
 @Configuration
 public class HttpClientConfiguration {
+    /**
+     * Returns a {@link GitHubClient} using the specified username and token.
+     *
+     * @param username the username to be used in the operation
+     * @param token the token to be used in the operation
+     * @return a {@link GitHubClient} using the specified username and token
+     * @throws NullPointerException if the specified username or token is {@code null}
+     */
     @Bean
     public GitHubClient gitHubClient(@Value("${github.username}") String username,
         @Value("${github.token}") String token) {

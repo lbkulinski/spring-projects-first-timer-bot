@@ -25,18 +25,39 @@ import com.slack.api.methods.SlackApiException;
 import org.springframework.scheduling.annotation.Scheduled;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * A service for sending Slack notifications in the Spring Projects First-timer Bot.
+ *
+ * @author Logan Kulinski, rashes_lineage02@icloud.com
+ */
 @Service
 public final class NotificationService {
+    /**
+     * The {@link DSLContext} of this {@link NotificationService}.
+     */
     private final DSLContext context;
 
+    /**
+     * The Slack token of this {@link NotificationService}.
+     */
     private final String slackToken;
 
+    /**
+     * The {@link Logger} of the {@link NotificationService} class.
+     */
     private static final Logger LOGGER;
 
     static {
         LOGGER = LoggerFactory.getLogger(NotificationService.class);
     }
 
+    /**
+     * Constructs an instance of the {@link NotificationService} class.
+     *
+     * @param context the {@link DSLContext} to be used in the operation
+     * @param slackToken the Slack token to be used in the operation
+     * @throws NullPointerException if the specified {@link DSLContext} or Slack token is {@code null}
+     */
     @Autowired
     public NotificationService(DSLContext context, @Value("${slack.token}") String slackToken) {
         Objects.requireNonNull(context);
@@ -48,6 +69,12 @@ public final class NotificationService {
         this.slackToken = slackToken;
     }
 
+    /**
+     * Returns a {@link Set} of new {@link Issue}s to be operated on. "New" in this context means that the issues were
+     * recently created and have a "first-timer" label.
+     *
+     * @return a {@link Set} of new {@link Issue}s to be operated on
+     */
     private Set<Issue> getNewIssues() {
         RecordMapper<Record3<Integer, String, String>, Issue> mapper = Records.mapping(Issue::new);
 
@@ -71,6 +98,12 @@ public final class NotificationService {
         return Collections.unmodifiableSet(set);
     }
 
+    /**
+     * Updates the specified {@link Issue} by setting its notification date.
+     *
+     * @param issue the {@link Issue} to be used in the operation
+     * @throws NullPointerException if the specified {@link Issue} is {@code null}
+     */
     private void updateIssue(Issue issue) {
         Objects.requireNonNull(issue);
 
@@ -90,6 +123,12 @@ public final class NotificationService {
         }
     }
 
+    /**
+     * Sends a Slack notification referring to the specified {@link Issue}.
+     *
+     * @param issue the {@link Issue} to be used in the operation
+     * @throws NullPointerException if the specified {@link Issue} is {@code null}
+     */
     private void sendNotification(Issue issue) {
         Objects.requireNonNull(issue);
 
@@ -121,6 +160,9 @@ public final class NotificationService {
         this.updateIssue(issue);
     }
 
+    /**
+     * Sends Slack notifications for new Spring {@link Issue}s every hour.
+     */
     @Scheduled(fixedRate = 1L, timeUnit = TimeUnit.HOURS)
     public void sendNotifications() {
         Set<Issue> newIssues = this.getNewIssues();
