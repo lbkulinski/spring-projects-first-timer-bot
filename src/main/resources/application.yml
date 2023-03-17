@@ -11,3 +11,6 @@ github:
   token: ${GITHUB_TOKEN}
 slack:
   token: ${SLACK_TOKEN}
+rollbar:
+  access-token: ${ROLLBAR_ACCESS_TOKEN}
+  environment: ${ROLLBAR_ENVIRONMENT}
