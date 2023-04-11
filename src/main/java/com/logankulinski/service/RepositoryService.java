@@ -1,5 +1,6 @@
 package com.logankulinski.service;
 
+import com.rollbar.notifier.Rollbar;
 import org.springframework.stereotype.Service;
 import com.logankulinski.client.GitHubClient;
 import com.logankulinski.util.Utilities;
@@ -43,6 +44,11 @@ public final class RepositoryService {
     private final DSLContext context;
 
     /**
+     * The {@link Rollbar} of this {@link RepositoryService}.
+     */
+    private final Rollbar rollbar;
+
+    /**
      * The {@link Logger} of the {@link RepositoryService} class.
      */
     private static final Logger LOGGER;
@@ -57,22 +63,27 @@ public final class RepositoryService {
      * @param client the {@link GitHubClient} to be used in the operation
      * @param utilities the {@link Utilities} to be used in the operation
      * @param context the {@link DSLContext} to be used in the operation
-     * @throws NullPointerException if the specified {@link GitHubClient}, {@link Utilities}, or {@link DSLContext} is
-     * {@code null}
+     * @param rollbar the {@link Rollbar} to be used in the operation
+     * @throws NullPointerException if the specified {@link GitHubClient}, {@link Utilities}, {@link DSLContext}, or
+     * {@link Rollbar} is {@code null}
      */
     @Autowired
-    public RepositoryService(GitHubClient client, Utilities utilities, DSLContext context) {
+    public RepositoryService(GitHubClient client, Utilities utilities, DSLContext context, Rollbar rollbar) {
         Objects.requireNonNull(client);
 
         Objects.requireNonNull(utilities);
 
         Objects.requireNonNull(context);
 
+        Objects.requireNonNull(rollbar);
+
         this.client = client;
 
         this.utilities = utilities;
 
         this.context = context;
+
+        this.rollbar = rollbar;
     }
 
     /**
@@ -140,16 +151,20 @@ public final class RepositoryService {
     }
 
     /**
-     * Updates the Spring {@link Repository} objects every hour.
+     * Updates the Spring {@link Repository} objects every day.
      */
     @Scheduled(fixedRate = 1L, timeUnit = TimeUnit.DAYS)
     public void updateRepositories() {
-        Set<Repository> repositories = this.getRepositories();
+        try {
+            Set<Repository> repositories = this.getRepositories();
 
-        if (repositories == null) {
-            return;
+            if (repositories == null) {
+                return;
+            }
+
+            repositories.forEach(this::saveRepository);
+        } catch (Exception e) {
+            this.rollbar.error(e);
         }
-
-        repositories.forEach(this::saveRepository);
     }
 }

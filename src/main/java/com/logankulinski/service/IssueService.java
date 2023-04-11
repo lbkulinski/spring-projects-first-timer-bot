@@ -4,6 +4,7 @@ import org.springframework.stereotype.Service;
 import org.jooq.DSLContext;
 import com.logankulinski.client.GitHubClient;
 import com.logankulinski.util.Utilities;
+import com.rollbar.notifier.Rollbar;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,6 +49,11 @@ public final class IssueService {
     private final Utilities utilities;
 
     /**
+     * The {@link Rollbar} of this {@link IssueService}.
+     */
+    private final Rollbar rollbar;
+
+    /**
      * The {@link Logger} of the {@link IssueService} class.
      */
     private static final Logger LOGGER;
@@ -62,22 +68,27 @@ public final class IssueService {
      * @param context the {@link DSLContext} to be used in the operation
      * @param client the {@link GitHubClient} to be used in the operation
      * @param utilities the {@link Utilities} to be used in the operation
-     * @throws NullPointerException if the specified {@link DSLContext}, {@link GitHubClient}, or {@link Utilities} is
-     * {@code null}
+     * @param rollbar the {@link Rollbar} to be used in the operation
+     * @throws NullPointerException if the specified {@link DSLContext}, {@link GitHubClient}, {@link Utilities}, or
+     * {@link Rollbar} is {@code null}
      */
     @Autowired
-    public IssueService(DSLContext context, GitHubClient client, Utilities utilities) {
+    public IssueService(DSLContext context, GitHubClient client, Utilities utilities, Rollbar rollbar) {
         Objects.requireNonNull(context);
 
         Objects.requireNonNull(client);
 
         Objects.requireNonNull(utilities);
 
+        Objects.requireNonNull(rollbar);
+
         this.context = context;
 
         this.client = client;
 
         this.utilities = utilities;
+
+        this.rollbar = rollbar;
     }
 
     /**
@@ -227,12 +238,16 @@ public final class IssueService {
      */
     @Scheduled(fixedRate = 1L, timeUnit = TimeUnit.HOURS)
     public void updateIssues() {
-        Set<Issue> issues = this.getIssues();
+        try {
+            Set<Issue> issues = this.getIssues();
 
-        if (issues == null) {
-            return;
+            if (issues == null) {
+                return;
+            }
+
+            issues.forEach(this::saveIssue);
+        } catch (Exception e) {
+            this.rollbar.error(e);
         }
-
-        issues.forEach(this::saveIssue);
     }
 }
