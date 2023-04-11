@@ -2,6 +2,7 @@ package com.logankulinski.service;
 
 import org.springframework.stereotype.Service;
 import org.jooq.DSLContext;
+import com.rollbar.notifier.Rollbar;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,6 +44,11 @@ public final class NotificationService {
     private final String slackToken;
 
     /**
+     * The {@link Rollbar} of this {@link NotificationService}.
+     */
+    private final Rollbar rollbar;
+
+    /**
      * The {@link Logger} of the {@link NotificationService} class.
      */
     private static final Logger LOGGER;
@@ -56,17 +62,23 @@ public final class NotificationService {
      *
      * @param context the {@link DSLContext} to be used in the operation
      * @param slackToken the Slack token to be used in the operation
-     * @throws NullPointerException if the specified {@link DSLContext} or Slack token is {@code null}
+     * @param rollbar the {@link Rollbar} to be used in the operation
+     * @throws NullPointerException if the specified {@link DSLContext}, Slack token, or {@link Rollbar} is
+     * {@code null}
      */
     @Autowired
-    public NotificationService(DSLContext context, @Value("${slack.token}") String slackToken) {
+    public NotificationService(DSLContext context, @Value("${slack.token}") String slackToken, Rollbar rollbar) {
         Objects.requireNonNull(context);
 
         Objects.requireNonNull(slackToken);
 
+        Objects.requireNonNull(rollbar);
+
         this.context = context;
 
         this.slackToken = slackToken;
+
+        this.rollbar = rollbar;
     }
 
     /**
@@ -165,12 +177,16 @@ public final class NotificationService {
      */
     @Scheduled(fixedRate = 1L, timeUnit = TimeUnit.HOURS)
     public void sendNotifications() {
-        Set<Issue> newIssues = this.getNewIssues();
+        try {
+            Set<Issue> newIssues = this.getNewIssues();
 
-        if (newIssues == null) {
-            return;
+            if (newIssues == null) {
+                return;
+            }
+
+            newIssues.forEach(this::sendNotification);
+        } catch (Exception e) {
+            this.rollbar.error(e);
         }
-
-        newIssues.forEach(this::sendNotification);
     }
 }
