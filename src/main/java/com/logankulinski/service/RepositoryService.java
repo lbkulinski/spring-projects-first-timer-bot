@@ -1,10 +1,10 @@
 package com.logankulinski.service;
 
-import com.rollbar.notifier.Rollbar;
 import org.springframework.stereotype.Service;
 import com.logankulinski.client.GitHubClient;
 import com.logankulinski.util.Utilities;
 import org.jooq.DSLContext;
+import com.rollbar.notifier.Rollbar;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
